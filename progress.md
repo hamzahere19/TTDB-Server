@@ -1,4 +1,4 @@
-# Progress Report - 30th Seot
+# Progress Report - 30th Sept
 
  Set up VS Code environment on Linux for project development.
  Thoroughly reviewed and understood the complete project requirements and architecture.
@@ -20,3 +20,9 @@
 
   implement readresolvefunction with C lanuage binary filing.
   Implement resolveProgram which converts a text source file into a binary program file by scanning all lines, recording function entry locations and function call positions, replacing unresolved call references with their actual function addresses, and returning the entry point offset of the main function.
+
+ # 3rd october
+
+ implement tokenizeline of pass 0x2 . Separate line into keyword , indentifier and param.
+ Implement buildsnapshot that calls snapshot_into func which copies and save current stack state.
+

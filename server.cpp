@@ -229,7 +229,7 @@ bool readSourceLine(ifstream &in, string &out)
     
     while(getline(in , line)){
         uint32_t start = 0;
-        while( start < line.length()&&(line[start]==' '  || line[start]== '\t'  ) ){
+        while( start < line.length()&&(line[start]==' '  || line[start]== '\t'  || line[start]=='\r'  ) ){
             start++;
 
         }
@@ -252,12 +252,12 @@ string firstWord(const string &line)
 {
     uint32_t start = 0;
 
-    while(start < line.length()&&(line[start]==' '  || line[start]== '\t' ) ){
+    while(start < line.length()&&(line[start]==' '  || line[start]== '\t' || line[start] == '\r' || line[start] == '\n') ){
         start++;
 
     }
     uint32_t end = start;
-    while(end < line.length() && line[end] != ' ' && line[end] != '\t' ){
+    while(end < line.length() && line[end] != ' ' && line[end] != '\t'   && line[end] != '\r' && line[end] != '\n' ){
         end++;
     } 
 
@@ -273,21 +273,21 @@ string secondWord(const string &line)
     uint32_t start = 0;
 
 
-    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' )){
+    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' || line[start] == '\r' || line[start] == '\n')){
         start++;
     }
 
-    while(start< line.length() && line[start] != ' ' && line[start] != '\t' ){
+    while(start< line.length() && line[start] != ' ' && line[start] != '\t' && line[start] != '\r' && line[start] != '\n'){
         start++;
     }
 
-    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' )){
+    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' || line[start] == '\r' || line[start] == '\n')){
         start++;
 
     }
 
     uint32_t end = start;
-    while(end < line.length() && line[end] != ' ' && line[end] != '\t' ){
+    while(end < line.length() && line[end] != ' ' && line[end] != '\t' && line[end] != '\r' && line[end] != '\n'){
         end++;
     } 
 
@@ -312,6 +312,7 @@ bool validateProgram(const char *sourcePath)
     uint32_t InsideFun = 0;
 
     while(readSourceLine(fin , line)){
+
         string first = firstWord(line);
         string second = secondWord(line);
 
@@ -331,6 +332,7 @@ bool validateProgram(const char *sourcePath)
         }
 
         else if (first == "func_end"){
+
             if(InsideFun==0){
                 cout << "unmatch func_end found," << endl;
                 fin.close();
@@ -339,6 +341,7 @@ bool validateProgram(const char *sourcePath)
             InsideFun = 0;
         }
         else{
+
             if(InsideFun ==0){
                 cout << "Line out function" << endl;
                 fin.close();
@@ -351,6 +354,7 @@ bool validateProgram(const char *sourcePath)
     }
 
     fin.close();
+
     if(InsideFun == 1){
         cout << "func_end os missing" << endl;
       
@@ -536,6 +540,58 @@ struct Token
 };
 int32_t tokenizeLine(const string &line, Token tokens[], int32_t maxTokens)
 {
+
+
+
+
+    int32_t Count = 0;
+    size_t i = 0;
+    size_t n = line.length();
+
+
+
+
+    while (i < n &&Count < maxTokens)
+    {
+  
+        while (i < n &&(line[i] == ' ' || line[i] == '\t' || line[i] == '\n' || line[i] == '\r')) {
+            i++;
+        }
+
+        if (i >= n){
+         break; 
+        } 
+
+        string word = "";
+        while (i < n &&(line[i] != ' '&& line[i] != '\t' && line[i] != '\n' && line[i] != '\r')) {
+            word +=line[i];
+            i++;
+        }
+
+   
+        if (word.length() >0) {
+            Token t;
+            t.text = word;
+
+
+
+            if (Count == 0) {
+                t.type = KEYWORD;
+            } 
+            else if (Count == 1) {
+                t.type = IDENTIFIER;
+            } 
+            else {
+                t.type = PARAM;
+            }
+
+            tokens[Count] = t;
+            Count++;
+
+        }
+    }
+
+    return Count;
     // first word is always a instruction keyword
     // instruction set = [func, func_end, call, set, add, sub, mul and div]
     // next word is identifier like name of a function, variable name
@@ -543,6 +599,9 @@ int32_t tokenizeLine(const string &line, Token tokens[], int32_t maxTokens)
 }
 Snapshot *buildSnapshot(Stack<Frame> &callStack)
 {
+    Snapshot *snap = new Snapshot();
+    snap->stackDepth = callStack.snapshot_into(snap->callStack, MAX_STACK_DEPTH);
+    return snap;
     // build the snapshot based on the callStack given
 }
 void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &timeline)
