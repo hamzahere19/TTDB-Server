@@ -606,6 +606,140 @@ Snapshot *buildSnapshot(Stack<Frame> &callStack)
 }
 void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &timeline)
 {
+
+
+
+    ifstream file(resolveBinPath,ios::binary);
+
+    if(!file){
+        cout << "File not found" ;
+        return;
+    }
+
+    Stack<Frame> st;
+    Frame fr;
+
+
+    fr.func_name[0] = 'm';
+    fr.func_name[1] = 'a';
+    fr.func_name[2] = 'i';
+    fr.func_name[3] = 'n';
+    fr.func_name[4] = '\0';
+
+    fr.returnLine = -1;  
+    fr.localCount = 0;
+    fr.argc =0;
+
+    st.push(fr);
+
+
+    file.seekg(mainOffset);
+
+
+    char line[256];
+    char key[50], id[50], param[50];
+
+
+    while (!st.isEmpty()&&readSourceLine(file, line,sizeof(line)))
+    {
+        tokenizeLine(line, key, id, param);
+
+
+        Frame *curr = st.peek();
+
+
+        if (key[0] =='S' && key[1] =='E' && key[2] =='T' && key[3] =='\0')
+        {
+            int32_t val = atoi(param);
+            int i = 0;
+
+
+            for (i = 0; i <curr->localCount; i++)
+            {
+                int j = 0;
+                while (id[j] != '\0' && id[j] == curr->locals[i].name[j])
+                {
+                    j++;
+                }
+
+                if (id[j] == '\0' && curr->locals[i].name[j] == '\0')
+                {
+                    curr->locals[i].value = val; 
+                    break;                       
+                }
+            }
+
+            if (i ==curr->localCount)
+            {
+                int j = 0;
+                while (id[j] != '\0')
+                {
+                    curr->locals[i].name[j] = id[j];
+                    j++;
+                }
+                curr->locals[i].name[j] ='\0';
+
+                curr->locals[i].value =val;
+
+                curr->localCount++; 
+            }
+        }
+
+
+        else if (key[0] == 'C' && key[1] == 'A' && key[2] == 'L' && key[3] == 'L' && key[4] == '\0')
+        {
+           
+            curr->returnLine = file.tellg();
+
+           
+            Frame newFr;
+ 
+            int j = 0;
+            while (id[j] !='\0')
+            {
+                newFr.func_name[j] = id[j];
+                j++;
+            }
+            newFr.func_name[j] = '\0';
+
+            newFr.argc = 0;
+            newFr.localCount = 0;
+            newFr.returnLine = -1;
+
+        
+            st.push(newFr);
+
+            int  OffSet = stoi(param);
+            file.seekg(OffSet);
+
+
+        }    
+
+
+        else if (key[0] == 'F' && key[1] == 'U' && key[2] == 'N' && key[3] == 'C' && 
+                 key[4] =='_' && key[5] == 'E' && key[6] == 'N' && key[7] == 'D' && key[8] == '\0')
+        {
+
+            st.pop();
+
+            if (!st.isEmpty())
+            {
+                Frame *prevCurr =st.peek();
+                if (prevCurr->returnLine !=-1)
+                {
+
+                    file.seekg(prevCurr->returnLine);
+                }
+            }
+        }
+
+
+
+    }    
+
+
+
+
     // initialize the call stack
     // make the main frame
     // push main frame on the call stack

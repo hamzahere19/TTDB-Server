@@ -26,3 +26,6 @@
  implement tokenizeline of pass 0x2 . Separate line into keyword , indentifier and param.
  Implement buildsnapshot that calls snapshot_into func which copies and save current stack state.
 
+ # 4th october
+
+ Implement executeprogram in which i create stack and frame and push frame into stack then read the line from target file and tokenize it and access active fram pointer using peek and then apply SET , CALL and FUNC_END instructions into it. Implemented all the instructions includes variables management , function call and function return.
