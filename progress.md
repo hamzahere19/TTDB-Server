@@ -29,3 +29,8 @@
  # 4th october
 
  Implement executeprogram in which i create stack and frame and push frame into stack then read the line from target file and tokenize it and access active fram pointer using peek and then apply SET , CALL and FUNC_END instructions into it. Implemented all the instructions includes variables management , function call and function return.
+
+  # 5th october
+
+  implemented the writeTdbg function to save timeline snapshots and their byte positions into a binary .tdbg file.
+  Saved an index array of byte offsets at the end of the file and updated the header to enable instant jumping to any step in the debugger.

@@ -751,6 +751,69 @@ void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &ti
 // PASS 0x3: SERIALIZE TIMELINE
 void writeTdbg(Timeline &timeline, const char *tdbgPath)
 {
+    ofstream file(tdbgPath, ios::binary);
+    if (!file) {
+        cout << "File not found "  << endl;
+        return;
+    }
+
+
+    int32_t stepCount = timeline.getStepCount();
+
+
+
+    int64_t idxOffset = 0;
+
+  file.write((const char*)&stepCount,sizeof(stepCount));
+   file.write((const char*)&idxOffset,sizeof(idxOffset));
+
+
+   int64_t *indexArray =new int64_t[stepCount];
+
+
+    TimelineNode *curr =timeline.begin();
+    int idx = 0;
+
+    while (curr != nullptr && idx < stepCount)
+    {
+
+       indexArray[idx] =file.tellp();
+       Snapshot *snap =curr->snapshot;
+
+  
+       file.write((const char*)&snap->stackDepth,sizeof(snap->stackDepth));
+
+   
+       for (int f = 0; f < snap->stackDepth; f++)
+        {
+          file.write((const char*)&snap->callStack[f],sizeof(Frame));
+        }
+
+        curr =curr->next;
+        idx++;
+    }
+
+
+    idxOffset = file.tellp();
+
+   
+    for (int i = 0; i < stepCount; i++)
+    {
+        file.write((const char*)&indexArray[i],sizeof(int64_t));
+    }
+
+   
+    delete[] indexArray;
+
+
+
+    file.seekp(0);
+
+  
+    file.write((const char*)&stepCount,sizeof(stepCount));
+    file.write((const char*)&idxOffset,sizeof(idxOffset));
+
+    file.close();
     // placeholder for header
     // index array of the size of stepcount from the timeline
     // placing each snapshot in the file while maintaining the index(starting point of each nth snapshot)
