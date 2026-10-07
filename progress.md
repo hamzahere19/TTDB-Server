@@ -34,3 +34,9 @@
 
   implemented the writeTdbg function to save timeline snapshots and their byte positions into a binary .tdbg file.
   Saved an index array of byte offsets at the end of the file and updated the header to enable instant jumping to any step in the debugger.
+
+  # 6th and 7th october 
+
+  Almost found around 25 bugs in my code.Most of them were type mismatch like passing a variable to a function but function paramter is of different type and many other logical bugs. Still have the work to do.
+
+

@@ -226,20 +226,21 @@ struct PendingPatch
 bool readSourceLine(ifstream &in, string &out)
 {
     string line;
-    
-    while(getline(in , line)){
+    while (getline(in, line))
+    {
         uint32_t start = 0;
-        while( start < line.length()&&(line[start]==' '  || line[start]== '\t'  || line[start]=='\r'  ) ){
+        while (start < line.length() &&(line[start] == ' ' ||line[start] == '\t' ||line[start] == '\r'))
+        {
             start++;
 
         }
 
-        if(start < line.length() && line[start]!= '#'){
+        if (start < line.length() &&line[start] != '#')
+        {
             out = line.substr(start);
             return true;
         }
 
-         
 
 
 
@@ -251,48 +252,48 @@ bool readSourceLine(ifstream &in, string &out)
 string firstWord(const string &line)
 {
     uint32_t start = 0;
-
-    while(start < line.length()&&(line[start]==' '  || line[start]== '\t' || line[start] == '\r' || line[start] == '\n') ){
+    while (start < line.length() && (line[start] == ' ' ||line[start] == '\t' ||line[start] == '\r' || line[start] == '\n'))
+    {
         start++;
 
     }
+
     uint32_t end = start;
-    while(end < line.length() && line[end] != ' ' && line[end] != '\t'   && line[end] != '\r' && line[end] != '\n' ){
+    while (end < line.length() &&line[end] != ' ' &&line[end] != '\t' && line[end] != '\r' && line[end] != '\n')
+    {
         end++;
-    } 
+    }
 
-    return line.substr(start,end-start);
-
-
+    return line.substr(start, end - start);
 
     
-    // returns first word from the input string
 }
 string secondWord(const string &line)
 {
     uint32_t start = 0;
 
-
-    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' || line[start] == '\r' || line[start] == '\n')){
+    while (start < line.length() &&(line[start] == ' ' ||line[start] == '\t' ||line[start] == '\r' || line[start] == '\n'))
+    {
         start++;
     }
 
-    while(start< line.length() && line[start] != ' ' && line[start] != '\t' && line[start] != '\r' && line[start] != '\n'){
+    while (start < line.length() && line[start] != ' ' &&line[start] != '\t' &&line[start] != '\r' && line[start] != '\n')
+    {
         start++;
     }
 
-    while(start< line.length() && (line[start] == ' ' || line[start] == '\t' || line[start] == '\r' || line[start] == '\n')){
+    while (start < line.length() && (line[start] == ' ' ||line[start] == '\t' || line[start] == '\r' || line[start] == '\n'))
+    {
         start++;
 
     }
 
     uint32_t end = start;
-    while(end < line.length() && line[end] != ' ' && line[end] != '\t' && line[end] != '\r' && line[end] != '\n'){
+
+    while (end < line.length() && line[end] != ' ' && line[end] != '\t' &&line[end] != '\r' && line[end] != '\n')
+    {
         end++;
-    } 
-
-
-
+    }
 
     return line.substr(start, end - start);
 }
@@ -300,7 +301,9 @@ bool validateProgram(const char *sourcePath)
 {
 
     ifstream fin(sourcePath);
-    if(!fin){
+
+    if (!fin)
+    {
         cout << "File not found" << endl;
         return false;
     }
@@ -310,39 +313,48 @@ bool validateProgram(const char *sourcePath)
     string line;
     uint32_t hasMain = 0;
     uint32_t InsideFun = 0;
-
-    while(readSourceLine(fin , line)){
-
+    while (readSourceLine(fin, line))
+    {
         string first = firstWord(line);
+
         string second = secondWord(line);
 
-        if(first == "func"){
-            if(InsideFun == 1){
+        if (first == "func")
+        {
+            if (InsideFun == 1)
+            {
                 cout << "Nested functions not allowed." << endl;
                 fin.close();
                 return false;
             }
+
             InsideFun = 1;
 
-            if(second == "main"){
+            if (second == "main")
+            {
                 hasMain = 1;
 
             }
 
         }
 
-        else if (first == "func_end"){
-
-            if(InsideFun==0){
+        else if (first == "func_end")
+        {
+            if (InsideFun == 0)
+            {
                 cout << "unmatch func_end found," << endl;
                 fin.close();
                 return false;
             }
             InsideFun = 0;
-        }
-        else{
 
-            if(InsideFun ==0){
+        }
+
+
+        else
+        {
+            if (InsideFun == 0)
+            {
                 cout << "Line out function" << endl;
                 fin.close();
                 return false;
@@ -354,23 +366,25 @@ bool validateProgram(const char *sourcePath)
     }
 
     fin.close();
-
-    if(InsideFun == 1){
-        cout << "func_end os missing" << endl;
-      
+    if (InsideFun == 1)
+    {
+        cout << "func_end is missing" << endl;
         return false;
     }
+    if (hasMain == 0)
+    {
 
-    if(hasMain == 0){
-        cout << "Main function is missing" << endl;
-    
+
+       cout << "Main function is missing" << endl;
+
         return false;
     }
 
     return true;
 
-    // for each func defined there should be exactly one func_end and no nested funcs allowed - 
+    
 }
+
 
 // PASS 0x1: RESOLVE() -> resolve.bin
 int64_t writeResolveRecord(FILE *f, int64_t offsetField, const string &text)
@@ -396,14 +410,16 @@ int64_t readResolveRecord(FILE *f, string &outText)
     int64_t offsetField = 0;
     uint32_t len = 0;
     if(!fread(&offsetField,sizeof(int64_t),1,f)){
-        return 0;
+        return -1;
     }
     if(!fread(&len,sizeof(uint32_t),1,f)){
-        return 0;
+        return -1;
     }
     outText.resize(len);
     if(len>0){
-        fread(&outText[0],sizeof(char),len,f);
+        if(fread(&outText[0],sizeof(char),len,f) !=len){
+           return -1;
+        }
     }
 
     return offsetField;
@@ -423,7 +439,7 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
         return -1;  
     }
 
-    fstream bin(resolveBinPath, ios::binary||ios::in||ios::out);
+    FILE *bin = fopen(resolveBinPath, "w+b");
     if (!bin) {
         src.close();
         return -1;
@@ -435,47 +451,29 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
 
     while(getline(src,line)){
         string temp = line + "\n";
-        int64_t start = writeResolveRecord(bin,0,temp);
+        int64_t pos = ftell(bin);
+        int64_t start = writeResolveRecord(bin, pos, temp);
        
     
 
-        if (temp.length() >= 5 && temp.substr(0, 5)== "FUNC ")
+        if (firstWord(temp) == "func")
         {
-        
-            string funcName ="";
-            for (size_t i = 5;i < temp.length();i++) {
-                if (temp[i] == ' ' || temp[i] == '\n') {
-                    break;
-                }
-                funcName +=temp[i];
-            }
+            string funcName = secondWord(temp);
 
-            funcArray[funcCount].name =funcName;
-            funcArray[funcCount].offset =start;
+            funcArray[funcCount].funcName = funcName;
+            funcArray[funcCount].byteOffsetInResolveBin = start;
             funcCount++;
 
             if (funcName == "main") {
                 mainOffset = start;
             }
         }
-
-        else if (temp.length() >= 5 && temp.substr(0, 5)== "CALL ")
+        else if (firstWord(temp) == "call")
         {
-            string Target ="";
-            for (size_t i = 5;i < temp.length();i++) {
-                if (temp[i] == ' ' || temp[i] == '\n') {
-                    break;
-                }
-                Target +=temp[i];
-            }
-
-            patches[patchCount].patchOffset = start;
-            patches[patchCount].targetFuncName = Target;
+            patches[patchCount].byteOffsetOfOffsetField = start;
+            patches[patchCount].targetFuncName = secondWord(temp);
             patchCount++;
-
-
-
-        }   
+        }
     }    
 
 
@@ -483,26 +481,30 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
 
 
     if (mainOffset == -1) {
-        bin.close();
+        fclose(bin);
         return -1;
     }
 
 
 
-    for(int i = 0 ; i <patchCount; i++){
+    for(int32_t i = 0 ; i <patchCount; i++){
         int64_t targetOffset = -1;
 
-        for (int j = 0; j < funcCount; j++) {
-           if (funcArray[j].name == patches[i].targetFuncName) {
-               targetOffset = funcArray[j].offset;
+        for (int32_t j = 0; j < funcCount; j++) {
+           if (funcArray[j].funcName == patches[i].targetFuncName) {
+                targetOffset = funcArray[j].byteOffsetInResolveBin;
                 break;
             }
         }    
         
-        if (targetOffset != -1) {
-          bin.seekp(patches[i].patchOffset);
-          bin.write((const char*)&targetOffset,sizeof(int64_t));
+        if (targetOffset == -1) {
+            cout << "Call to undefined function: " << patches[i].targetFuncName << endl;
+            fclose(bin);
+            return -1;
         }
+
+        fseek(bin, patches[i].byteOffsetOfOffsetField, SEEK_SET);
+        fwrite(&targetOffset, sizeof(int64_t), 1, bin);
 
 
     }
@@ -510,7 +512,7 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
 
 
 
-    bin.close();
+    fclose(bin);
 
 
     return mainOffset;
@@ -604,154 +606,271 @@ Snapshot *buildSnapshot(Stack<Frame> &callStack)
     return snap;
     // build the snapshot based on the callStack given
 }
+
+
+
+
+
+
+
+
+int32_t findLocal(Frame *fr, const string &name)
+{
+    for (int32_t i = 0; i < fr->localCount; i++)
+    {
+        if (fr->locals[i].name == name)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+
+
+
+
+
+
+
+
 void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &timeline)
 {
+    if (mainOffset == -1) {
+        return;
+    }
+    FILE *file = fopen(resolveBinPath, "rb");
 
-
-
-    ifstream file(resolveBinPath,ios::binary);
-
-    if(!file){
-        cout << "File not found" ;
+    if (!file) {
+        cout << "File not found" << endl;
         return;
     }
 
     Stack<Frame> st;
     Frame fr;
 
-
-    fr.func_name[0] = 'm';
-    fr.func_name[1] = 'a';
-    fr.func_name[2] = 'i';
-    fr.func_name[3] = 'n';
-    fr.func_name[4] = '\0';
+    fr.func_name = "main";
 
     fr.returnLine = -1;  
     fr.localCount = 0;
-    fr.argc =0;
+    fr.argc = 0;
 
     st.push(fr);
 
+    fseek(file, mainOffset, SEEK_SET);
 
-    file.seekg(mainOffset);
+    string line;
+    Token tokens[MAX_TOKENS];
 
-
-    char line[256];
-    char key[50], id[50], param[50];
-
-
-    while (!st.isEmpty()&&readSourceLine(file, line,sizeof(line)))
+    while (!st.isEmpty())
     {
-        tokenizeLine(line, key, id, param);
+        int64_t recordOffset = readResolveRecord(file, line);
+        if (recordOffset == -1) {
+          break;
+        }  
+        int32_t tokenCount = tokenizeLine(line, tokens, MAX_TOKENS);
+        if (tokenCount == 0) {
+           continue;
+        }
 
+        
 
-        Frame *curr = st.peek();
-
-
-        if (key[0] =='S' && key[1] =='E' && key[2] =='T' && key[3] =='\0')
+        Frame* curr = &st.peek();
+         if (tokens[0].text == "func")
         {
-            int32_t val = atoi(param);
-            int i = 0;
-
-
-            for (i = 0; i <curr->localCount; i++)
+            for (int32_t p = 2; p < tokenCount && (p - 2) < curr->argc; p++)
             {
-                int j = 0;
-                while (id[j] != '\0' && id[j] == curr->locals[i].name[j])
+                if (curr->localCount < MAX_VARS_PER_FRAME)
                 {
-                    j++;
+                    curr->locals[curr->localCount].name = tokens[p].text;
+                    curr->locals[curr->localCount].value = curr->argv[p - 2].value;
+                    curr->localCount++;
                 }
-
-                if (id[j] == '\0' && curr->locals[i].name[j] == '\0')
-                {
-                    curr->locals[i].value = val; 
-                    break;                       
-                }
-            }
-
-            if (i ==curr->localCount)
-            {
-                int j = 0;
-                while (id[j] != '\0')
-                {
-                    curr->locals[i].name[j] = id[j];
-                    j++;
-                }
-                curr->locals[i].name[j] ='\0';
-
-                curr->locals[i].value =val;
-
-                curr->localCount++; 
             }
         }
 
-
-        else if (key[0] == 'C' && key[1] == 'A' && key[2] == 'L' && key[3] == 'L' && key[4] == '\0')
-        {
-           
-            curr->returnLine = file.tellg();
-
-           
-            Frame newFr;
  
-            int j = 0;
-            while (id[j] !='\0')
-            {
-                newFr.func_name[j] = id[j];
-                j++;
+        else if (tokens[0].text == "set")
+        {
+            int32_t val = 0;
+            if (tokenCount > 2) {
+                val = stoi(tokens[2].text);
             }
-            newFr.func_name[j] = '\0';
+            int32_t i = 0;
 
+            for (i = 0; i < curr->localCount; i++)
+            {
+                if (curr->locals[i].name == tokens[1].text)
+                {
+                    curr->locals[i].value = val;
+                    break;
+                }
+            }
+
+            if (i == curr->localCount && curr->localCount < MAX_VARS_PER_FRAME)
+            {
+                curr->locals[i].name = tokens[1].text;
+                curr->locals[i].value = val;
+                curr->localCount++;
+            }
+        }
+
+       
+        else if (tokens[0].text == "call")
+        {
+            curr->returnLine = ftell(file);
+
+            Frame newFr;
+            newFr.func_name = tokens[1].text;
             newFr.argc = 0;
             newFr.localCount = 0;
             newFr.returnLine = -1;
 
-        
+            for (int32_t a = 2; a < tokenCount && newFr.argc < MAX_VARS_PER_FRAME; a++)
+            {
+                int32_t pos = findLocal(curr, tokens[a].text);
+                int32_t val = 0;
+                if (pos != -1)
+                {
+                    val = curr->locals[pos].value;
+                }
+                else
+                {
+                    val = stoi(tokens[a].text);
+                }
+                newFr.argv[newFr.argc].name = tokens[a].text;
+                newFr.argv[newFr.argc].value = val;
+                newFr.argc++;
+            }
+
+            fseek(file, recordOffset, SEEK_SET);
+
             st.push(newFr);
+        }
 
-            int  OffSet = stoi(param);
-            file.seekg(OffSet);
-
-
-        }    
-
-
-        else if (key[0] == 'F' && key[1] == 'U' && key[2] == 'N' && key[3] == 'C' && 
-                 key[4] =='_' && key[5] == 'E' && key[6] == 'N' && key[7] == 'D' && key[8] == '\0')
+    
+        else if (tokens[0].text == "func_end")
         {
-
-            st.pop();
+            Frame finished = st.pop();
 
             if (!st.isEmpty())
             {
-                Frame *prevCurr =st.peek();
-                if (prevCurr->returnLine !=-1)
-                {
+                Frame *prevCurr = &st.peek();
 
-                    file.seekg(prevCurr->returnLine);
+                for (int32_t a = 0; a < finished.argc; a++)
+                {
+                    int32_t callerPos = findLocal(prevCurr, finished.argv[a].name);
+                    if (callerPos != -1 && a < finished.localCount)
+                    {
+                        prevCurr->locals[callerPos].value = finished.locals[a].value;
+                    }
+                }
+
+                if (prevCurr->returnLine != -1)
+                {
+                    fseek(file, prevCurr->returnLine, SEEK_SET);
                 }
             }
         }
 
 
+        else if (tokens[0].text == "add" || tokens[0].text == "sub" ||
+            tokens[0].text == "mul" || tokens[0].text == "div")
+        {
+            int32_t dst = findLocal(curr, tokens[1].text);
 
+            if (dst == -1 && curr->localCount < MAX_VARS_PER_FRAME)
+            {
+                dst = curr->localCount;
+                curr->locals[dst].name = tokens[1].text;
+                curr->locals[dst].value = 0;
+                curr->localCount++;
+            }
+
+            int32_t operand = 0;
+            if (tokenCount > 2)
+            {
+                int32_t src = findLocal(curr, tokens[2].text);
+                if (src != -1)
+                {
+                    operand = curr->locals[src].value;
+                }
+                else
+                {
+                    operand = stoi(tokens[2].text);
+                }
+            }
+
+            if (dst != -1)
+            {
+                if (tokens[0].text == "add")
+                {
+                    curr->locals[dst].value += operand;
+                }
+                else if (tokens[0].text == "sub")
+                {
+                    curr->locals[dst].value -= operand;
+                }
+                else if (tokens[0].text == "mul")
+                {
+                    curr->locals[dst].value *= operand;
+                }
+                else
+                {
+                    if (operand == 0)
+                    {
+                        cout << "Division by zero" << endl;
+                    }
+                    else
+                    {
+                        curr->locals[dst].value /= operand;
+                    }
+                }
+            }
+        }
+
+        timeline.record(buildSnapshot(st));
     }    
 
-
-
-
-    // initialize the call stack
-    // make the main frame
-    // push main frame on the call stack
-
-    // implementation:
-    // execute line by line, and according to the keyword perform action
+    fclose(file);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void writeString(FILE *f, const string &s)
+{
+    uint32_t len = s.length();
+    fwrite(&len, sizeof(uint32_t), 1, f);
+    if (len > 0) {
+        fwrite(&s[0], sizeof(char), len, f);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 // PASS 0x3: SERIALIZE TIMELINE
 void writeTdbg(Timeline &timeline, const char *tdbgPath)
 {
-    ofstream file(tdbgPath, ios::binary);
+    FILE *file = fopen(tdbgPath, "w+b");
     if (!file) {
         cout << "File not found "  << endl;
         return;
@@ -762,31 +881,57 @@ void writeTdbg(Timeline &timeline, const char *tdbgPath)
 
 
 
-    int64_t idxOffset = 0;
+    TTDBHeader header;
+    header.magic[0] = 'T';
+    header.magic[1] = 'T';
+    header.magic[2] = 'D';
+    header.magic[3] = 'B';
+    header.version = 1;
+    header.stepCount = stepCount;
+    header.indexOffset = 0;
 
-  file.write((const char*)&stepCount,sizeof(stepCount));
-   file.write((const char*)&idxOffset,sizeof(idxOffset));
+    writeHeader(file, header);                       
+    fwrite(&stepCount, sizeof(int32_t), 1, file);    
+    int64_t placeholder = 0;
+    fwrite(&placeholder, sizeof(int64_t), 1, file);  
 
 
    int64_t *indexArray =new int64_t[stepCount];
 
 
     TimelineNode *curr =timeline.begin();
-    int idx = 0;
+    int32_t idx = 0;
 
     while (curr != nullptr && idx < stepCount)
     {
 
-       indexArray[idx] =file.tellp();
-       Snapshot *snap =curr->snapshot;
+       indexArray[idx] = ftell(file);
+       Snapshot *snap =curr->data;
 
   
-       file.write((const char*)&snap->stackDepth,sizeof(snap->stackDepth));
+       fwrite(&snap->stackDepth, sizeof(int32_t), 1, file);
 
-   
-       for (int f = 0; f < snap->stackDepth; f++)
+        for (int32_t f = 0; f < snap->stackDepth; f++)
         {
-          file.write((const char*)&snap->callStack[f],sizeof(Frame));
+            Frame &fr = snap->callStack[f];
+
+            writeString(file, fr.func_name);
+
+            fwrite(&fr.argc, sizeof(int32_t), 1, file);
+            for (int32_t a = 0; a < fr.argc; a++)
+            {
+                writeString(file, fr.argv[a].name);
+                fwrite(&fr.argv[a].value, sizeof(int32_t), 1, file);
+            }
+
+            fwrite(&fr.returnLine, sizeof(int32_t), 1, file);
+
+            fwrite(&fr.localCount, sizeof(int32_t), 1, file);
+            for (int32_t l = 0; l < fr.localCount; l++)
+            {
+                writeString(file, fr.locals[l].name);
+                fwrite(&fr.locals[l].value, sizeof(int32_t), 1, file);
+            }
         }
 
         curr =curr->next;
@@ -794,12 +939,12 @@ void writeTdbg(Timeline &timeline, const char *tdbgPath)
     }
 
 
-    idxOffset = file.tellp();
+    int64_t idxOffset = ftell(file);
 
    
-    for (int i = 0; i < stepCount; i++)
+    for (int32_t i = 0; i < stepCount; i++)
     {
-        file.write((const char*)&indexArray[i],sizeof(int64_t));
+        fwrite(&indexArray[i], sizeof(int64_t), 1, file);
     }
 
    
@@ -807,13 +952,13 @@ void writeTdbg(Timeline &timeline, const char *tdbgPath)
 
 
 
-    file.seekp(0);
+    
 
   
-    file.write((const char*)&stepCount,sizeof(stepCount));
-    file.write((const char*)&idxOffset,sizeof(idxOffset));
+    fseek(file, 12, SEEK_SET);                       
+    fwrite(&idxOffset, sizeof(int64_t), 1, file);
 
-    file.close();
+    fclose(file);
     // placeholder for header
     // index array of the size of stepcount from the timeline
     // placing each snapshot in the file while maintaining the index(starting point of each nth snapshot)
