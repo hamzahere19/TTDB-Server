@@ -458,6 +458,13 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
 
         if (firstWord(temp) == "func")
         {
+            if (funcCount >= MAX_FUNCS)
+            {
+               cout << "Too many functions" << endl;
+                src.close();
+               fclose(bin);
+                return -1;
+            }
             string funcName = secondWord(temp);
 
             funcArray[funcCount].funcName = funcName;
@@ -470,6 +477,17 @@ int64_t resolveProgram(const char *sourcePath, const char *resolveBinPath)
         }
         else if (firstWord(temp) == "call")
         {
+
+
+
+            if (patchCount >= MAX_PATCHES)
+            {
+               cout << "Too many calls" << endl;
+               src.close();
+                fclose(bin);
+                return -1;
+           }
+            
             patches[patchCount].byteOffsetOfOffsetField = start;
             patches[patchCount].targetFuncName = secondWord(temp);
             patchCount++;
@@ -677,7 +695,7 @@ void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &ti
         
 
         Frame* curr = &st.peek();
-         if (tokens[0].text == "func")
+        if (tokens[0].text == "func")
         {
             for (int32_t p = 2; p < tokenCount && (p - 2) < curr->argc; p++)
             {
@@ -719,6 +737,12 @@ void executeProgram(const char *resolveBinPath, int64_t mainOffset, Timeline &ti
        
         else if (tokens[0].text == "call")
         {
+
+            if (st.depth() >= MAX_STACK_DEPTH)
+            {
+               cout << "Stack overflow" << endl;
+                break;
+            }
             curr->returnLine = ftell(file);
 
             Frame newFr;
@@ -870,6 +894,13 @@ void writeString(FILE *f, const string &s)
 // PASS 0x3: SERIALIZE TIMELINE
 void writeTdbg(Timeline &timeline, const char *tdbgPath)
 {
+
+
+    if (timeline.getStepCount() == 0)
+    {
+        cout << "Nothing to write" << endl;
+        return;
+    }
     FILE *file = fopen(tdbgPath, "w+b");
     if (!file) {
         cout << "File not found "  << endl;

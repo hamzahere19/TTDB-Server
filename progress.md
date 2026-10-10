@@ -40,3 +40,15 @@
   Almost found around 25 bugs in my code.Most of them were type mismatch like passing a variable to a function but function paramter is of different type and many other logical bugs. Still have the work to do.
 
 
+  # 8th - 10th october
+  
+  Add , mul , div was not implemented.They were only in a comment.There was no check for division by zero. If locals were more than 16, the code wrote outside the array.I added three helper functions:
+  findVar: finds a variable in locals and args
+  getValue: gives the number from a number or a variable
+  setVar: updates a variable, or creates it if it is not found
+  set now also uses getValue, so set x y works.
+  div now checks for zero. If the value is zero, it prints an error and stops.
+
+  Running final checks on my code and testing the output.
+
+
