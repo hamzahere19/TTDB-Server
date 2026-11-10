@@ -52,3 +52,22 @@
   Running final checks on my code and testing the output.
 
 
+
+  # 6th and 7th november
+
+  Downloaded all the files and implemented client.cpp.
+
+
+  # 8th - 10th november
+
+
+  implemented loadbalancer.cpp and helper.h but changes in loadbalancer and server.cpp are still pending.
+
+
+  
+
+
+
+
+
+
