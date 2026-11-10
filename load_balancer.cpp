@@ -34,21 +34,26 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 #include "helper.h"
 using namespace std;
 
 
 // ---- Constants ----
 const char *SERVER_PATH = "./server";      // the program we start when the server is down
-const int IO_BUFFER_SIZE = 64 * 1024;      // fixed buffer for moving bytes
+   
 const int LISTEN_BACKLOG = 16;             // connections the OS holds until accept() takes them
 const int MAX_PENDING_CLIENTS = 8;         // clients allowed to wait in our queue. More than this get "server busy".
 const int STARTUP_MAX_ATTEMPTS = 50;       // after starting the server, how many times we try to connect
 const int STARTUP_POLL_INTERVAL_MS = 100;  // wait between those tries (50 x 100 ms = 5 seconds in total)
 int lbPort = 5000;
-string serverHost = "127.0.0.0";
+string serverHost = "127.0.0.1";
 int serverPort = 5001;
 const int CLIENT_TIMEOUT_SEC = 30;
+
 
 
 // ---- Queue: here it holds client sockets (int). ----
@@ -148,28 +153,10 @@ struct ClientInfo
 // The queue is used by two threads, so every use of it must be inside queueMutex.
 Queue<ClientInfo> pendingClients;
 mutex queueMutex;
-sig_atomic_t flag = 1;
+volatile sig_atomic_t flag = 1;
 
 
-// ---- Basic socket helpers ----
-bool sendAll(int sock, const char *buf, size_t n) 
-{
 
-    size_t sent = 0;
-    while (sent < n)
-    {
-        ssize_t r = send(sock, buf + sent, n - sent, MSG_NOSIGNAL);
-        if (r <= 0)
-        {
-            return false;
-        }
-        sent += (size_t)r;
-    }
-    return true;
-    // Reply format: [status: 1 byte][sending_material][checksum: 4 bytes].
-    // send() may send fewer bytes than asked for, so keep calling it until all n bytes are sent.
-    
-}
 bool sendError(int sock, const string &message)
 {
     Crc32 crc;
