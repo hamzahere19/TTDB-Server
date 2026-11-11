@@ -35,6 +35,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cerrno>
+#include <fcntl.h>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -482,6 +483,13 @@ void acceptLoop(int listenSock)
         int clientSock = accept(listenSock, nullptr, nullptr);
         if (clientSock < 0)
         {
+            continue;
+        }
+
+        int fdFlags = fcntl(clientSock, F_GETFD);
+        if (fdFlags < 0 || fcntl(clientSock, F_SETFD, fdFlags | FD_CLOEXEC) < 0)
+        {
+            close(clientSock);
             continue;
         }
 
